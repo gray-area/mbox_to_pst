@@ -1,8 +1,8 @@
-import libpff
+import libpff-python
 
 def create_pst(emails, pst_file):
     """Create a PST file and add emails."""
-    pst = libpff.file()
+    pst = libpff-pyhon.file()
     pst.open(pst_file, 'w')
     
     root = pst.get_root_folder()
