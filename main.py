@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import scrolledtext
-from convert_mbox_to_pst import convert_mbox_to_pst
+from mbox_to_pst import mbox_to_pst
 import os
 
 class MboxToPstApp:
@@ -65,7 +65,7 @@ class MboxToPstApp:
         
         # Call the conversion function
         try:
-            convert_mbox_to_pst(mbox_file, pst_file)
+            mbox_to_pst(mbox_file, pst_file)
             self.log_message("Conversion successful!")
             messagebox.showinfo("Success", "Conversion completed successfully!")
         except Exception as e:
