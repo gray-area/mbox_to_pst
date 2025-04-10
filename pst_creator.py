@@ -1,22 +1,24 @@
-import libpff-python
+import libpff
+import logging
 
-def create_pst(emails, pst_file):
-    """Create a PST file and add emails."""
-    pst = libpff-pyhon.file()
-    pst.open(pst_file, 'w')
-    
-    root = pst.get_root_folder()
-    
-    # Create folder and add emails
-    folder = root.create_sub_folder('Inbox')
-    
-    for email in emails:
-        message = folder.create_message()
-        message.set_subject(email["subject"])
-        message.set_sender(email["from"])
-        message.set_recipient(email["to"])
-        message.set_date(email["date"].strftime("%Y-%m-%d %H:%M:%S"))
-        message.set_body(email["body"].decode('utf-8', errors='ignore'))
-    
-    pst.write()
-    pst.close()
+def create_pst(mbox_folder, pst_filename):
+    try:
+        # Create the PST file object
+        pst = libpff.file()
+        pst.create()
+
+        # Create a root folder in the PST
+        root_folder = pst.root_folder
+
+        # Iterate through mbox files and add their emails to the PST
+        for mbox_file in mbox_folder:
+            for message in mbox_file.messages:
+                email = root_folder.add_message(message)
+                logging.info(f"Added message to PST: {email.subject}")
+
+        # Save the created PST file
+        pst.save(pst_filename)
+        logging.info(f"Created PST file: {pst_filename}")
+    except Exception as e:
+        logging.error(f"Error creating PST file: {str(e)}")
+        raise
