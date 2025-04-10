@@ -1,85 +1,60 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from tkinter import scrolledtext
-from mbox_to_pst import mbox_to_pst
-import os
+import logging
+from mbox_to_pst import convert_mbox_to_pst
 
-class MboxToPstApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("MBox to PST Converter")
-        self.root.geometry("500x400")
-        
-        # Set up the layout
-        self.create_widgets()
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-    def create_widgets(self):
-        # MBox file selection
-        self.mbox_label = tk.Label(self.root, text="Select MBOX File:")
-        self.mbox_label.pack(pady=5)
-        self.mbox_button = tk.Button(self.root, text="Browse...", command=self.browse_mbox)
-        self.mbox_button.pack(pady=5)
-        self.mbox_file = tk.Entry(self.root, width=50)
-        self.mbox_file.pack(pady=5)
+def browse_mbox_file():
+    file_path = filedialog.askopenfilename(title="Select MBOX File", filetypes=[("MBOX Files", "*.mbox")])
+    mbox_file_entry.delete(0, tk.END)
+    mbox_file_entry.insert(0, file_path)
 
-        # PST output file selection
-        self.pst_label = tk.Label(self.root, text="Select Output PST File:")
-        self.pst_label.pack(pady=5)
-        self.pst_button = tk.Button(self.root, text="Browse...", command=self.browse_pst)
-        self.pst_button.pack(pady=5)
-        self.pst_file = tk.Entry(self.root, width=50)
-        self.pst_file.pack(pady=5)
+def browse_pst_file():
+    file_path = filedialog.asksaveasfilename(title="Save as PST File", defaultextension=".pst", filetypes=[("PST Files", "*.pst")])
+    pst_file_entry.delete(0, tk.END)
+    pst_file_entry.insert(0, file_path)
 
-        # Convert button
-        self.convert_button = tk.Button(self.root, text="Convert", command=self.convert_mbox)
-        self.convert_button.pack(pady=20)
+def convert():
+    mbox_file = mbox_file_entry.get()
+    pst_file = pst_file_entry.get()
 
-        # Log output area
-        self.log_area = scrolledtext.ScrolledText(self.root, width=60, height=10, wrap=tk.WORD)
-        self.log_area.pack(pady=10)
-        self.log_area.config(state=tk.DISABLED)
+    if not mbox_file or not pst_file:
+        messagebox.showerror("Error", "Please provide both MBOX and PST file paths.")
+        return
 
-    def browse_mbox(self):
-        mbox_path = filedialog.askopenfilename(filetypes=[("MBOX Files", "*.mbox")])
-        if mbox_path:
-            self.mbox_file.delete(0, tk.END)
-            self.mbox_file.insert(0, mbox_path)
+    try:
+        convert_mbox_to_pst(mbox_file, pst_file)
+        messagebox.showinfo("Success", f"Conversion completed successfully!\nPST saved as: {pst_file}")
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-    def browse_pst(self):
-        pst_path = filedialog.asksaveasfilename(defaultextension=".pst", filetypes=[("PST Files", "*.pst")])
-        if pst_path:
-            self.pst_file.delete(0, tk.END)
-            self.pst_file.insert(0, pst_path)
+# Set up the GUI window
+root = tk.Tk()
+root.title("MBOX to PST Converter")
 
-    def convert_mbox(self):
-        mbox_file = self.mbox_file.get()
-        pst_file = self.pst_file.get()
+frame = tk.Frame(root)
+frame.pack(padx=20, pady=20)
 
-        # Basic validation
-        if not mbox_file or not pst_file:
-            messagebox.showerror("Error", "Please provide both MBOX and PST files.")
-            return
-        
-        # Log the start of the conversion
-        self.log_message(f"Starting conversion from {mbox_file} to {pst_file}...")
-        
-        # Call the conversion function
-        try:
-            mbox_to_pst(mbox_file, pst_file)
-            self.log_message("Conversion successful!")
-            messagebox.showinfo("Success", "Conversion completed successfully!")
-        except Exception as e:
-            self.log_message(f"Error: {str(e)}")
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-    
-    def log_message(self, message):
-        """Log messages in the GUI output area."""
-        self.log_area.config(state=tk.NORMAL)
-        self.log_area.insert(tk.END, message + "\n")
-        self.log_area.config(state=tk.DISABLED)
-        self.log_area.yview(tk.END)
+# MBOX file selection
+mbox_file_label = tk.Label(frame, text="Select MBOX file:")
+mbox_file_label.grid(row=0, column=0, sticky="w")
+mbox_file_entry = tk.Entry(frame, width=40)
+mbox_file_entry.grid(row=0, column=1)
+browse_mbox_button = tk.Button(frame, text="Browse", command=browse_mbox_file)
+browse_mbox_button.grid(row=0, column=2)
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = MboxToPstApp(root)
-    root.mainloop()
+# PST file selection
+pst_file_label = tk.Label(frame, text="Save as PST file:")
+pst_file_label.grid(row=1, column=0, sticky="w")
+pst_file_entry = tk.Entry(frame, width=40)
+pst_file_entry.grid(row=1, column=1)
+browse_pst_button = tk.Button(frame, text="Browse", command=browse_pst_file)
+browse_pst_button.grid(row=1, column=2)
+
+# Convert button
+convert_button = tk.Button(frame, text="Convert", command=convert)
+convert_button.grid(row=2, columnspan=3, pady=10)
+
+root.mainloop()
