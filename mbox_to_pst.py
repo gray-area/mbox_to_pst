@@ -1,25 +1,17 @@
-import os
-from mbox_parser import parse_mbox
+import logging
+import libpff
+
 from pst_creator import create_pst
-from utils import check_pst_exists, log
+from mbox_parser import parse_mbox
 
-def mbox_to_pst(mbox_file, pst_file):
-    # Check if PST file already exists
-    if check_pst_exists(pst_file):
-        log(f"PST file already exists: {pst_file}")
-        return
-    
-    # Parse the MBOX file
-    log(f"Parsing MBOX file: {mbox_file}")
-    emails = parse_mbox(mbox_file)
-    
-    # Create the PST file and add emails
-    log(f"Creating PST file: {pst_file}")
-    create_pst(emails, pst_file)
-    log(f"Conversion complete: {pst_file}")
+def convert_mbox_to_pst(mbox_file, pst_filename):
+    try:
+        # Parse the .mbox file to get the list of emails
+        mbox_folder = parse_mbox(mbox_file)
 
-if __name__ == "__main__":
-    # Example usage: python convert_mbox_to_pst.py mbox_file pst_file
-    mbox_file = "example.mbox"
-    pst_file = "output.pst"
-    mbox_to_pst(mbox_file, pst_file)
+        # Create the PST file and add the emails
+        create_pst(mbox_folder, pst_filename)
+        logging.info(f"Conversion complete: {pst_filename}")
+    except Exception as e:
+        logging.error(f"Error during conversion: {str(e)}")
+        raise
